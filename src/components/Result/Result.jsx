@@ -1,17 +1,27 @@
 import React, { useState } from "react";
+import "./Result.css";
+//Generation Packages
 import Generation from "../../generation/generation_pb";
 import GenerationService from "../../generation/generation_pb_service";
 import { grpc } from "@improbable-eng/grpc-web";
-import "./Result.css";
+
+//React styling libraries
+import {AiOutlineColumnWidth,AiOutlineColumnHeight} from "react-icons/ai"
+import { IconContext } from "react-icons";
 import { Rings } from 'react-loader-spinner';
+
+//States
 export default function Result() {
   const [buttonLoading, setButtonLoading] = useState(false);
   const [prompt, setPrompt] = useState("");
   const [result, setResult] = useState({
     data: "iVBORw0KGgoAAAANSUhEUgAAAgAAAAIAAQMAAADOtka5AAAABlBMVEUAAAD///+l2Z/dAAAAAXRSTlMAQObYZgAAAAFiS0dEAf8CLd4AAAA2SURBVBgZ7cEBAQAAAIKg/q92SMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM4FggAAAbUHaq4AAAAASUVORK5CYII=",
   });
+  const [width , setWidth] = useState(512)
+  const [height , setHeight] = useState(512)
 
-  const data = { inputs: prompt };
+
+const data = { inputs: prompt };
   var options = {
     headers: {
       Authorization: process.env.REACT_APP_API_TOKEN,
@@ -19,14 +29,23 @@ export default function Result() {
     },
   };
 
-  function handleChange(event) {
-    setPrompt(event.target.value);
+//Functions to handle changes
+  const handleChange = (e) => {
+    setPrompt(e.target.value);
   }
+  const handleWidthChange = (e) => {
+    setWidth(e.target.value)
+  }
+  const handleHeightChange = (e) => {
+    setHeight(e.target.value)
+  }
+
+  //Fetching the data 
   async function handleSubmit(event) {
     setButtonLoading(true);
     const imageParams = new Generation.ImageParameters();
-    imageParams.setWidth(512);
-    imageParams.setHeight(512);
+    imageParams.setWidth(width);
+    imageParams.setHeight(height);
     //imageParams.addSeed(1234);
     imageParams.setSamples(1);
     imageParams.setSteps(50);
@@ -56,6 +75,7 @@ export default function Result() {
     const promptText = new Generation.Prompt();
     promptText.setText(prompt);
     request.addPrompt(promptText);
+    
     // Authenticate using your API key, don't commit your key to a public repository!
     const metadata = new grpc.Metadata();
     metadata.set(
@@ -113,9 +133,6 @@ export default function Result() {
         "Your image could not be generated. You might not have enough credits."
       );
     });
-
-    //await axios.post(API_URL, data, options).then((res) => setResult(res));
-    // console.log(result.data);
   }
 
   return (
@@ -123,24 +140,48 @@ export default function Result() {
       <div className="flex p-9 ">
         <input
           placeholder="Enter your prompt"
-          className="w-10/12 overflow-hidden p-2 pl-4 rounded-lg bg-[#221F20] text-white tracking-widest	"
+          className="w-10/12 overflow-hidden p-2 pl-4 rounded-lg bg-[#29282B] text-white tracking-wide	shadow-lg"
           onChange={handleChange}
           value={prompt}
         ></input>
         <button
-          className=" flex justify-center w-44 px-6 py-2.5 mx-3 text-sm font-medium transition ease-in-out delay-150 bg-blue-500 hover:-translate-y-1 hover:scale-110 hover:bg-indigo-500 duration-300 rounded-xl"
+          className=" flex justify-center w-44 px-6 py-2.5 mx-3 text-sm font-medium transition ease-in-out delay-150 bg-blue-500 hover:-translate-y-1 hover:scale-110 hover:bg-indigo-500 duration-300 rounded-lg"
           type="submit"
           disabled={buttonLoading}
           onClick={handleSubmit}
         >
-          {/* {buttonLoading ? "Loading" : "Generate"} */}
-          {buttonLoading ? <Rings height="30" width="30" color= "white" radius="3" wrapperStyle={{}} wrapperClass="" visible={true} ariaLabel="rings-loading"/> : "Generate"}
-          {/* {buttonLoading ? <InfinitySpin width='100' color="white"/> : "Generate"} */}
+        {buttonLoading ? <Rings height="30" width="30" color= "white" radius="3" wrapperStyle={{}} wrapperClass="" visible={true} ariaLabel="rings-loading"/> : "Generate"}
           
         </button>
       </div>
+      {/* Options */}
+      <div className="options flex justify-around">
+        <div className="width flex">
+          <IconContext.Provider value={{ color: "white", size:"2em" , className:"mr-3"}}>
+            <AiOutlineColumnWidth />
+          </IconContext.Provider>
+            <input 
+              onChange={handleWidthChange}
+              value={width}
+              className="p-2 pl-4 rounded-lg bg-[#29282B] text-white tracking-wide	shadow-lg"
+              placeholder="width"
+              type="number"
+            />
+        </div>
+        <div className="ml-3 height flex">
+          <IconContext.Provider value={{ color: "white", size:"2em" , className:"mr-3" }}>
+            <AiOutlineColumnHeight/>
+          </IconContext.Provider>
+          <input 
+            onChange={handleHeightChange  }
+            value={height}
+            className="p-2 pl-4 rounded-lg bg-[#29282B] text-white tracking-wide	shadow-lg"
+            placeholder="height"
+            type="number"
+          />
+        </div>
+      </div>
       <img
-        // src={imgURL}
         className="object-cover mx-auto my-5 justify-center rounded-lg"
         alt=""
       />
